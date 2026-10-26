@@ -1,0 +1,1 @@
+"""Funcionalidades da aplicação."""
