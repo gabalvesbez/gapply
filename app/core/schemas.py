@@ -1,0 +1,6 @@
+"""Configuração comum da validação de entradas."""
+from pydantic import BaseModel, ConfigDict
+
+
+class Input(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)

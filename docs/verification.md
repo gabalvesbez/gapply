@@ -1,5 +1,35 @@
 # Verificação desta implementação
 
+## Reorganização por domínio — 04/11/2026
+
+Verificada com as dependências existentes do `uv.lock`, sem alterações de versões:
+
+- OpenAPI gerado antes/depois idêntico, incluindo URLs, schemas e códigos de resposta.
+- Definições das nove tabelas preservadas: colunas, tipos, nulabilidade, chaves
+  primárias e referências. `alembic check` em SQLite isolado migrado também não
+  detectou novas operações de schema.
+- Fluxo local abaixo repetido após a mudança: upload, perfil, avaliação, busca,
+  formulário sintético, proteção contra reenvio e persistência após reiniciar.
+- Rotas de fontes, listagens e erros de validação verificadas separadamente.
+- Entrevista com resposta controlada: histórico salvo e confirmação do perfil
+  mantida sob controle do usuário.
+- Rotas de sessões do navegador verificadas com cliente substituto, além da
+  verificação de candidaturas com Chromium e formulário sintético.
+- Nenhum import dos módulos antigos restante no código. Serviços não recebem
+  `Request` nem usam `Depends`/`APIRouter`.
+- Links locais do README e do guia de arquitetura verificados.
+
+As verificações usaram bancos e documentos temporários em `.data`; nenhuma
+candidatura real foi enviada. PostgreSQL e provedores reais de IA não foram
+validados nesta refatoração. Nenhuma nova migração ou suíte pytest foi adicionada.
+
+Os comandos de verificação pontual foram `uv run --locked --no-sync python
+.data/verify_backend.py` e `uv run --locked --no-sync python .data/check_domains.py`.
+Esses scripts locais são ignorados pelo Git; este registro descreve a execução,
+não substitui a futura suíte de testes do projeto.
+
+## Implementação inicial — 26/10/2026
+
 Verificado em 26/10/2026, Python 3.14 no Windows, com dependências do uv.lock.
 
 ## Fluxo local

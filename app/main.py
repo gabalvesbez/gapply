@@ -6,20 +6,24 @@ from alembic.config import Config
 from fastapi import FastAPI, Depends, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from sqlalchemy import select, text
+from sqlalchemy import select
 from starlette.concurrency import run_in_threadpool
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.body_limit import RequestBodyLimitMiddleware
 from starlette.exceptions import HTTPException
-from app.config import settings, MAX_REQUEST_BYTES
-from app.database import Session, SearchRun
-from app.browser import BrowserWorker
-from app.security import require_key
-from app.modules.resumes.router import router as resumes
-from app.modules.profiles.router import router as profiles
-from app.modules.jobs.router import router as jobs
-from app.modules.applications.router import router as applications
-from app.modules.resumes.errors import ResumeError, FileTooLargeError, UnsupportedFormatError
+from app import models  # Registra todas as tabelas na metadata do SQLAlchemy.
+from app.core.config import settings, MAX_REQUEST_BYTES
+from app.core.database import Session
+from app.core.security import require_key
+from app.domains.jobs.models import SearchRun
+from app.domains.browser.client import BrowserWorker
+from app.domains.resumes.router import router as resumes
+from app.domains.profiles.router import router as profiles
+from app.domains.jobs.router import router as jobs
+from app.domains.applications.router import router as applications
+from app.domains.browser.router import router as browser
+from app.domains.system.router import router as system
+from app.domains.resumes.errors import ResumeError, FileTooLargeError, UnsupportedFormatError
 
 def migrate():
     command.upgrade(Config("alembic.ini"), "head")
@@ -64,20 +68,8 @@ def create_app():
     async def http_error(request: Request, exc: HTTPException):
         return JSONResponse({"detail": exc.detail}, status_code=exc.status_code, headers=exc.headers)
 
-    @app.get("/health", tags=["Sistema"])
-    def health():
-        with Session() as db:
-            db.execute(text("SELECT 1"))
-        return {"status": "ok"}
-
-    @app.get("/api/v1/capabilities", dependencies=[Depends(require_key)], tags=["Sistema"])
-    def capabilities():
-        return {"deepseek_configured": bool(settings.deepseek_api_key), "jev_configured": bool(settings.jev_api_key),
-                "mode": "personal_local", "upload_limit_bytes": 10 * 1024 * 1024,
-                "resume_formats": ["pdf", "docx"], "browser": "local_assisted",
-                "automatic_submission_confirmation": False}
-
-    for router in (resumes, profiles, jobs, applications):
+    app.include_router(system)
+    for router in (resumes, profiles, jobs, applications, browser):
         app.include_router(router, prefix="/api/v1", dependencies=[Depends(require_key)])
     return app
 

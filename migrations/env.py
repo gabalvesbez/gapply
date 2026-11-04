@@ -1,5 +1,6 @@
 from alembic import context
-from app.database import Base, engine
+from app import models  # Importa os modelos de todos os domínios para o Alembic.
+from app.core.database import Base, engine
 target_metadata = Base.metadata
 
 if context.is_offline_mode():

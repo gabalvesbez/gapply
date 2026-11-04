@@ -145,24 +145,30 @@ não representam a chance de contratação. A classificação não envia candida
 
 ```text
 app/
-  main.py                 # aplicação, CORS, limites e ciclo de vida
-  config.py               # .env e limites
-  security.py             # chave local
-  database.py             # modelos SQLAlchemy
-  repository.py           # consultas compartilhadas e deduplicação
-  contracts.py            # entradas e respostas da IA
-  browser.py              # Playwright em thread dedicada no Windows
-  clients/
-    ai.py                 # DeepSeek e Jev
-    jobs.py               # Remotive, Greenhouse e Lever
-  modules/
-    resumes/              # upload, validação, PDF e DOCX
+  main.py                 # monta a aplicação, CORS, erros e ciclo de vida
+  models.py               # registra os modelos de todos os domínios
+  core/                   # configuração, conexão, autenticação e bases comuns
+  integrations/
+    ai.py                 # clientes DeepSeek/Jev compartilhados
+  domains/
     profiles/             # perfil e entrevista
-    jobs/                 # busca, progresso, importação e avaliação
-    applications/         # formulários e histórico de candidaturas
-migrations/               # migração inicial versionada
-docs/                     # contrato e roteiro do frontend
+    resumes/              # currículos, originais e extração PDF/DOCX
+    jobs/                 # fontes, busca, vagas e avaliação
+    applications/         # candidatura, revisão, envio e histórico
+    browser/              # sessões e cliente Playwright
+    system/               # saúde e capacidades da aplicação
+migrations/               # evolução da estrutura do banco
+docs/                     # arquitetura, contrato e roteiro do frontend
 ```
+
+Cada domínio possui `router.py` (HTTP) e `services.py` (operações e regras).
+Os contratos ficam em `schemas.py` e as tabelas em `models.py`, nos domínios
+que precisam deles. Não há tabelas artificiais para navegador ou sistema.
+Rotas recebem a requisição e delegam aos serviços; serviços coordenam banco,
+extratores e clientes externos. Os módulos continuam no mesmo processo e banco.
+
+Leia [o guia de arquitetura, arquivo por arquivo](docs/architecture.md).
+A reorganização preservou URLs, contratos OpenAPI e tabelas existentes.
 
 Os TODOs foram substituídos por implementação. Não há pytest nem suite de testes
 adicionada: mantivemos essa parte para seu aprendizado.
